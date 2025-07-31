@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <springProperty name="APP" source="spring.application.name"
+                    scope="context"/>
+    <property name="CONSOLE_PATTERN"
+              value="%d{HH:mm:ss.SSS} %green(${APP}): %highlight(%-5level) [%logger{5} -> %M] %boldWhite(%marker) %magenta(%mdc) --- %cyan(%msg) %rEx{short} %n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

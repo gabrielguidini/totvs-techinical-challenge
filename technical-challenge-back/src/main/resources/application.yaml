@@ -1,0 +1,66 @@
+server:
+  port: 8080
+  compression:
+    enabled: true
+    mime-types: "application/json,application/xml"
+    min-response-size: 2048
+  error.path: "/error"
+  servlet:
+    contextPath: "/api"
+    encoding:
+      charset: "utf-8"
+      force: true
+  http2.enabled: true
+  tomcat:
+    keep-alive-timeout: 60000
+    threads:
+      max: -1
+      min-spare: 0
+
+spring:
+  application.name: technical-challenge
+  datasource:
+    url: ${POSTGRES_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASS}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-test-query: "SELECT 1"
+      isolate-internal-queries: true
+      maximum-pool-size: 20
+      minimum-idle: 10
+      connection-timeout: 30000
+      initialization-fail-timeout: 2000
+      validation-timeout: 3000
+      keepalive-time: 60000
+      idle-timeout: 300000
+      max-lifetime: 540000
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+
+
+springdoc:
+  api-docs:
+    version: openapi_3_1
+    path: "/api-docs"
+  default-consumes-media-type: "application/json"
+  default-produces-media-type: "application/json"
+  show-login-endpoint: false
+  swagger-ui:
+    display-request-duration: true
+    path: /${spring.application.name}.swagger-ui
+
+api:
+  cors:
+    origin: "*"
+    method: "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    header: "Content-Type,X-Requested-With,Accept,Authorization,Origin,Access-Control-Request-Method,Access-Control-Request-Headers"
+    access: "Access-Control-Allow-Origin,Access-Control-Allow-Credentials"
+    credencial: "true"
+    content: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:"
+    policy: "camera=(), fullscreen=(self), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), sync-xhr=()"
+    permitted:
+      - "/api-docs/**"
+      - "/swagger-ui/**"
