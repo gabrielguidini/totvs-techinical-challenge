@@ -8,10 +8,11 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - '5432:5432'
     healthcheck:
-      test: "pg_isready -U usr-totvs -d totvs-db"
+      test: "pg_isready -U usr-totvs -D totvs-db"
       interval: "10s"
       timeout: "5s"
       retries: 5
@@ -25,13 +26,10 @@ services:
       dockerfile: Dockerfile
     env_file: ./technical-challenge-back/.env
     environment:
-      - POSTGRES_USER=${POSTGRES_DB}
-      - POSTGRES_PASS=${POSTGRES_PASS}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-
     depends_on:
       - postgres
     ports:

@@ -10,5 +10,4 @@ public class InstallmentService extends AbstractService<Installment> {
     super(Installment.class, repository);
   }
 
-  
 }
