@@ -8,13 +8,13 @@ Simulação de para empŕestimos
 
 ## Stack utilizada
 
-**Front-end:** ReactJS
+**Front-end:** ReactJS 19.1.1
 
-**Back-end:** Java e Spring
+**Back-end:** Java 21 e Spring 3.5.4
 
-**Database:** PostgreSQL
+**Database:** PostgreSQL 16
 
-**Deployment:** Docker
+**Deployment:** Docker 27.2.0
 
 ## Instalação
 

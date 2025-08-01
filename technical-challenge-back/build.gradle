@@ -31,6 +31,9 @@ dependencies {
     // Postgres
     runtimeOnly 'org.postgresql:postgresql'
 
+    // Commons
+    implementation 'ch.obermuhlner:big-math:2.3.0'
+
     // Bean Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 

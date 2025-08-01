@@ -8,6 +8,6 @@ import lombok.experimental.UtilityClass;
 public class MonetaryUtils {
 
   public static BigDecimal round(BigDecimal value) {
-    return value.setScale(2, RoundingMode.HALF_EVEN);
+    return value.setScale(2, RoundingMode.HALF_UP);
   }
 }

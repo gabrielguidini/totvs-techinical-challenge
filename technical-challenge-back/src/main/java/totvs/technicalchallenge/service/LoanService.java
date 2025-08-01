@@ -1,8 +1,10 @@
 package totvs.technicalchallenge.service;
 
+import ch.obermuhlner.math.big.BigDecimalMath;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -75,10 +77,12 @@ public class LoanService extends AbstractService<Loan> {
         "LoanService.calculateInstallments() - init_process - dates {} - totalAmount {} - annualInterestRate {}",
         dates, totalAmount, annualInterestRate);
     List<Installment> installments = new ArrayList<>();
+
+    // Correção 1: Usar HALF_UP e mais casas decimais na amortização
     BigDecimal fixedAmortization = totalAmount.divide(
         BigDecimal.valueOf(TOTAL_INSTALLMENTS),
-        2,
-        RoundingMode.UP
+        10,
+        RoundingMode.HALF_UP
     );
 
     log.info("LoanService.calculateInstallments() - building_grid");
@@ -95,10 +99,11 @@ public class LoanService extends AbstractService<Loan> {
       LocalDate previousDate = dates.get(i - 1);
 
       long daysBetween = ChronoUnit.DAYS.between(previousDate, currentDate);
-      double baseValue = 1 + annualInterestRate.doubleValue();
-      double exponentValue = (double) daysBetween / BASE_DAYS;
-      double factorValue = Math.pow(baseValue, exponentValue);
-      BigDecimal factor = BigDecimal.valueOf(factorValue);
+      BigDecimal baseValue = BigDecimal.ONE.add(annualInterestRate);
+      BigDecimal exponentValue = new BigDecimal(daysBetween).divide(
+          new BigDecimal(BASE_DAYS), 10, RoundingMode.HALF_UP
+      );
+      BigDecimal factor = calculatePower(baseValue, exponentValue);
       BigDecimal provision = factor.subtract(BigDecimal.ONE)
           .multiply(previousBalance.add(previousAccumulated));
 
@@ -111,19 +116,30 @@ public class LoanService extends AbstractService<Loan> {
       BigDecimal currentAccumulated = previousAccumulated.add(provision);
 
       if (isPaymentDate) {
-        amortization = fixedAmortization;
+        // Correção 2: Ajustar última amortização
+        if (i == dates.size() - 1) {
+          amortization = previousBalance; // Amortiza o saldo residual
+        } else {
+          amortization = fixedAmortization;
+        }
+
         paidInterest = currentAccumulated;
         currentAccumulated = BigDecimal.ZERO;
         currentBalance = previousBalance.subtract(amortization);
       }
 
-      BigDecimal total = amortization.add(paidInterest);
-      BigDecimal outstandingBalance = currentBalance.add(currentAccumulated);
+      BigDecimal total = MonetaryUtils.round(amortization.add(paidInterest));
+      BigDecimal outstandingBalance = MonetaryUtils.round(currentBalance.add(currentAccumulated));
 
       installments.add(this.buildInstallment(currentDate,
-          currentBalance, currentAccumulated, provision,
-          paidInterest, amortization, outstandingBalance,
-          total, isPaymentDate, installmentIndex));
+          MonetaryUtils.round(currentBalance),
+          MonetaryUtils.round(currentAccumulated),
+          MonetaryUtils.round(provision),
+          MonetaryUtils.round(paidInterest),
+          MonetaryUtils.round(amortization),
+          MonetaryUtils.round(outstandingBalance),
+          MonetaryUtils.round(total),
+          isPaymentDate, installmentIndex));
 
       previousBalance = currentBalance;
       previousAccumulated = currentAccumulated;
@@ -143,8 +159,8 @@ public class LoanService extends AbstractService<Loan> {
         .initialDate(initialDate)
         .finalDate(finalDate)
         .firstPaymentDate(firstPaymentDate)
-        .totalAmount(totalAmount)
-        .interestRate(annualInterestRate)
+        .totalAmount(MonetaryUtils.round(totalAmount))
+        .interestRate(MonetaryUtils.round(annualInterestRate))
         .installments(installments)
         .createdAt(OffsetDateTime.now(ZoneOffset.UTC))
         .build();
@@ -172,6 +188,11 @@ public class LoanService extends AbstractService<Loan> {
         .total(MonetaryUtils.round(total))
         .installmentNumber(isPaymentDate ? (installmentIndex) + "/" + TOTAL_INSTALLMENTS : "")
         .build();
+  }
+
+  private BigDecimal calculatePower(BigDecimal base, BigDecimal exponent) {
+    MathContext mc = new MathContext(20, RoundingMode.HALF_UP);
+    return BigDecimalMath.pow(base, exponent, mc);
   }
 
 }
