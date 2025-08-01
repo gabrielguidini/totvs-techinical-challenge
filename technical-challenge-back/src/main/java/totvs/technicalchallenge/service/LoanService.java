@@ -78,7 +78,6 @@ public class LoanService extends AbstractService<Loan> {
         dates, totalAmount, annualInterestRate);
     List<Installment> installments = new ArrayList<>();
 
-    // Correção 1: Usar HALF_UP e mais casas decimais na amortização
     BigDecimal fixedAmortization = totalAmount.divide(
         BigDecimal.valueOf(TOTAL_INSTALLMENTS),
         10,
@@ -116,9 +115,8 @@ public class LoanService extends AbstractService<Loan> {
       BigDecimal currentAccumulated = previousAccumulated.add(provision);
 
       if (isPaymentDate) {
-        // Correção 2: Ajustar última amortização
         if (i == dates.size() - 1) {
-          amortization = previousBalance; // Amortiza o saldo residual
+          amortization = previousBalance;
         } else {
           amortization = fixedAmortization;
         }
